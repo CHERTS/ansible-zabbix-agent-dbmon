@@ -14,5 +14,5 @@
       zabbix_create_host: present
       zabbix_link_templates:
         - DBS_Template MySQL for Linux
-      zabbix_agent_dbmon_mysqluser: zabbixmon
-      zabbix_agent_dbmon_mysqlpassword: zabbixmon
+      zabbix_agent_dbmon_mysql_user: zabbixmon
+      zabbix_agent_dbmon_mysql_user_password: zabbixmon
