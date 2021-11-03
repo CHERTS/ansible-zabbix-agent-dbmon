@@ -1,0 +1,295 @@
+---
+- name: ZABBIX MAIN TASK | Fix facts for Linux Mint - distribution release
+  set_fact:
+    zabbix_agent_distribution_release: xenial
+  when:
+    - ansible_os_family == "Linuxmint"
+    - ansible_distribution_release == "sonya" or ansible_distribution_release == "serena"
+  tags: 
+    - zabbix_agent
+
+- name: ZABBIX MAIN TASK | Fix facts for Linux Mint - family
+  set_fact:
+    zabbix_agent_os_family: Debian
+  when:
+    - ansible_os_family == "Linuxmint"
+  tags: 
+    - zabbix_agent
+
+- name: Main task | Include RedHat specific variables
+  include_vars: "redhat.yml"
+  when:
+    - zabbix_agent_os_family == "RedHat"
+  tags: 
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name: Main task | Include Debian specific variables
+  include_vars: "debian.yml"
+  when:
+    - zabbix_agent_os_family == "Debian"
+  tags: 
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Install the correct repository for RedHat
+  include: "redhat.yml"
+  when:
+    - zabbix_agent_os_family == "RedHat"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name:  ZABBIX MAIN TASK | Install the correct repository for Debian
+  include: "debian.yml"
+  when:
+    - zabbix_agent_os_family == "Debian"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: Install pip packages for zabbix server
+  pip:
+    name: "{{ _pip_packages_zbx_server }}"
+    executable: pip3
+  when:
+    - inventory_hostname in groups['zabbix_server']|default([])
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name:  ZABBIX MAIN TASK | Install local python-netaddr package
+  pip:
+    name: netaddr
+    state: present
+  register: zabbix_python_netaddr_package_installed
+  until: zabbix_python_netaddr_package_installed is succeeded
+  delegate_to: localhost
+  become: "{{ zabbix_agent_become_on_localhost }}"
+  ignore_errors: yes
+  when:
+    - zabbix_install_pip_packages | bool
+    - ansible_all_ipv4_addresses is defined or (zabbix_agent_ip is not defined and total_private_ip_addresses is defined)
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Set default ip address for zabbix_agent_ip
+  set_fact:
+    zabbix_agent_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4'].address }}"
+  when:
+    - zabbix_agent_ip is not defined
+    - "'ansible_default_ipv4' in hostvars[inventory_hostname]"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Get Total Private IP Addresses
+  set_fact:
+    total_private_ip_addresses: "{{ ansible_all_ipv4_addresses | ipaddr('private') | length }}"
+  when:
+    - ansible_all_ipv4_addresses is defined
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Set first public ip address for zabbix_agent_ip
+  set_fact:
+    zabbix_agent_ip: "{{ ansible_all_ipv4_addresses | ipaddr('public') | first }}"
+    zabbix_agent_server: "{{ zabbix_agent_server_public_ip | default(zabbix_agent_server) }}"
+    zabbix_agent_serveractive: "{{ zabbix_agent_serveractive_public_ip | default(zabbix_agent_serveractive) }}"
+  when:
+    - zabbix_agent_ip is not defined
+    - total_private_ip_addresses is defined
+    - total_private_ip_addresses == '0'
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Set first private ip address for zabbix_agent_ip ZABBIX MAIN TASK | 
+  set_fact:
+    zabbix_agent_ip: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
+  when:
+    - zabbix_agent_ip is not defined
+    - total_private_ip_addresses is defined
+    - total_private_ip_addresses != '0'
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Fail invalid specified agent_listeninterface
+  fail:
+    msg: "The specified network interface does not exist"
+  when:
+    - zabbix_agent_listeninterface | bool
+    - (zabbix_agent_listeninterface not in ansible_all_ipv4_addresses)
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Set network interface
+  set_fact:
+    network_interface: ansible_{{ zabbix_agent_listeninterface }}
+  when:
+    - zabbix_agent_listeninterface | bool
+    - not zabbix_agent_listenip | bool
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Get IP of agent_listeninterface when no agent_listenip specified
+  set_fact:
+    zabbix_agent_listenip: "{{ hostvars[inventory_hostname][network_interface]['ipv4'].address | default('0.0.0.0') }}"
+    zabbix_agent_ip: "{{ hostvars[inventory_hostname][network_interface]['ipv4'].address | default('0.0.0.0') }}"
+  when:
+    - zabbix_agent_listeninterface | bool
+    - not zabbix_agent_listenip | bool
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+    - zabbix_api
+
+- name:  ZABBIX MAIN TASK | Default agent_listenip to all when not specified
+  set_fact:
+    zabbix_agent_listenip: '0.0.0.0'
+  when:
+    - not zabbix_agent_listenip
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Fail invalid specified agent_listenip
+  fail:
+    msg: "The agent_listenip does not exist"
+  when:
+    - zabbix_agent_listenip != '0.0.0.0'
+    - zabbix_agent_listenip != '127.0.0.1'
+    - (zabbix_agent_listenip not in ansible_all_ipv4_addresses)
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Install the correct repository for OS Linux
+  include: linux.yml
+  when:
+    - zabbix_agent_os_family != "Windows"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Installing the Zabbix-api package on localhost
+  pip:
+    name: zabbix-api
+    state: present
+  register: zabbix_api_package_installed
+  until: zabbix_api_package_installed is succeeded
+  delegate_to: localhost
+  become: "{{ zabbix_agent_become_on_localhost }}"
+  when:
+    - zabbix_install_pip_packages | bool
+    - (zabbix_api_create_hostgroup | bool) or (zabbix_api_create_hosts | bool)
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name:  ZABBIX MAIN TASK | Create hostgroups
+  zabbix_group:
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_api_user }}"
+    login_password: "{{ zabbix_api_pass }}"
+    host_group: "{{ zabbix_host_groups }}"
+    state: "{{ zabbix_create_hostgroup }}"
+    validate_certs: "{{ zabbix_validate_certs|default(omit) }}"
+  when:
+    - zabbix_api_create_hostgroup | bool
+  delegate_to: localhost
+  become: no
+  ignore_errors: 'yes'
+  tags:
+    - zabbix_api
+
+- name:  ZABBIX MAIN TASK | Create a new host or update an existing hosts info
+  zabbix_host:
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_api_user }}"
+    login_password: "{{ zabbix_api_pass }}"
+    host_name: "{{ zabbix_agent_hostname }}"
+    host_groups: "{{ zabbix_host_groups }}"
+    link_templates: "{{ zabbix_link_templates }}"
+    status: "{{ zabbix_host_status }}"
+    state: "{{ zabbix_create_host }}"
+    force: "{{ zabbix_update_host }}"
+    proxy: "{{ zabbix_proxy }}"
+    inventory_mode: "{{ zabbix_inventory_mode }}"
+    interfaces: "{{ zabbix_agent_interfaces }}"
+    visible_name: "{{ zabbix_visible_hostname|default(zabbix_agent_hostname) }}"
+    tls_psk: "{{ zabbix_agent_tlspsk_secret|default(omit) }}"
+    tls_psk_identity: "{{ zabbix_agent_tlspskidentity|default(omit) }}"
+    tls_issuer: "{{ zabbix_agent_tlsservercertissuer|default(omit) }}"
+    tls_subject: "{{ zabbix_agent_tlsservercertsubject|default(omit) }}"
+    tls_accept: "{{ zabbix_agent_tls_config[zabbix_agent_tlsaccept if zabbix_agent_tlsaccept else 'unencrypted'] }}"
+    tls_connect: "{{ zabbix_agent_tls_config[zabbix_agent_tlsconnect if zabbix_agent_tlsconnect else 'unencrypted'] }}"
+    validate_certs: "{{ zabbix_validate_certs|default(omit) }}"
+  when:
+    - zabbix_api_create_hosts | bool
+  delegate_to: localhost
+  become: no
+  ignore_errors: 'yes'
+  changed_when: false
+  tags:
+    - zabbix_api
+
+- name:  ZABBIX MAIN TASK | Updating host configuration with macros
+  zabbix_hostmacro:
+    server_url: "{{ zabbix_url }}"
+    login_user: "{{ zabbix_api_user }}"
+    login_password: "{{ zabbix_api_pass }}"
+    host_name: "{{ zabbix_agent_hostname }}"
+    macro_name: "{{ item.macro_key }}"
+    macro_value: "{{ item.macro_value }}"
+    validate_certs: "{{ zabbix_validate_certs|default(omit) }}"
+  with_items: "{{ zabbix_macros | default([]) }}"
+  when:
+    - zabbix_api_create_hosts | bool
+    - zabbix_macros is defined
+    - item.macro_key is defined
+  delegate_to: localhost
+  become: no
+  ignore_errors: 'yes'
+  tags:
+    - zabbix_api
+
+- name:  ZABBIX MAIN TASK | Including userparameters
+  include: "userparameter.yml"
+  when: zabbix_agent_userparameters|length > 0
+  tags:
+    - zabbix_agent
+    - zabbix_config
+    - zabbix_userparameter
+
+- name:  ZABBIX MAIN TASK | Update logrotate configuration
+  template:
+    src: logrotate_zabbix_agent_dbmon.j2
+    dest: /etc/logrotate.d/zabbix-agent-dbmon
+    owner: root
+    group: root
+    mode: '0644'
+  when:
+    - zabbix_agent_os_family == "Debian" or zabbix_agent_os_family == "Ubuntu"
+  tags:
+    - zabbix_agent
+    - zabbix_config

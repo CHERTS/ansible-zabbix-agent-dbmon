@@ -1,0 +1,11 @@
+---
+sign_keys:
+  "50":
+    focal:
+      sign_key: FAEAF4EC
+    bionic:
+      sign_key: FAEAF4EC
+    trusty:
+      sign_key: FAEAF4EC
+    xenial:
+      sign_key: FAEAF4EC

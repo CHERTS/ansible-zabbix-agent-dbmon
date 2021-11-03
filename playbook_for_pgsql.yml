@@ -1,0 +1,19 @@
+- hosts: all
+  vars_files:
+    - vars/secrets.yml
+  become: yes
+  roles:
+    - role: ansible-infra-zabbix-agent
+      zabbix_agent_server: "{{ zbx_srv_dbmon }}"
+      zabbix_agent_serveractive: "{{ zbx_srv_active_dbmon }}"
+      zabbix_agent_hostmetadata: LinuxPostgreSQL
+      zabbix_url: "{{ zbx_srv_url_dbmon }}"
+      zabbix_api_use: true
+      zabbix_api_user: api
+      zabbix_api_pass: "{{ vault_api_pass }}"
+      zabbix_create_host: present
+      zabbix_link_templates:
+        - DBS_Template PostgreSQL for Linux
+      zabbix_macros:
+        - macro_key: DBS_PGSQL_CONN_STRING
+          macro_value: host=localhost port=5432 dbname=postgres user=zabbixmon password=zabbixmon connect_timeout=10

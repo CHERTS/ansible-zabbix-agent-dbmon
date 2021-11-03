@@ -1,0 +1,12 @@
+---
+- name: restart zabbix-agent
+  service:
+    name: "{{ zabbix_agent_service }}"
+    state: restarted
+    enabled: yes
+  become: yes
+  when:
+    - zabbix_agent_version == '1'
+
+- name: firewalld-reload
+  command: "firewall-cmd --reload"

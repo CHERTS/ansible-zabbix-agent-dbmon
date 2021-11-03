@@ -1,0 +1,173 @@
+---
+- name: ZABBIX DEBIAN TASK | Include Zabbix gpg ids
+  include_vars: zabbix.yml
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: "Set short version name"
+  set_fact:
+    zabbix_short_version: "{{ zabbix_version | regex_replace('\\.', '') }}"
+    zabbix_underscore_version: "{{ zabbix_version | regex_replace('\\.', '_') }}"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+#- debug: 
+#    msg:
+#    - "{{ sign_keys[zabbix_short_version][zabbix_agent_distribution_release]['sign_key'] }}"
+#  tags:
+#    - zabbix_agent
+#    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Install gpg key
+  apt_key:
+    id: "{{ sign_keys[zabbix_short_version][zabbix_agent_distribution_release]['sign_key'] }}"
+    url: "{{ zabbix_repo_apt_key }}"
+  when:
+    - zabbix_repo == "dbs"
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Check for zabbix repositories
+  find:
+    paths: /etc/apt/sources.list.d
+    patterns: repo_dbservice_tech_zabbix*.list
+    excludes: "repo_dbservice_tech_zabbix_{{ zabbix_underscore_version }}_ubuntu.list"
+  register: repositories
+  become: yes
+  when:
+    - ansible_distribution == "Ubuntu"
+    - zabbix_repo == "dbs"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Remove unecessary zabbix repositories
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  loop: "{{ repositories.files }}"
+  when:
+    - ansible_distribution == "Ubuntu"
+    - zabbix_repo == "dbs"
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: Get DEB architecture
+  command: dpkg --print-architecture
+  register: deb_architecture
+  when: ansible_distribution in ['Ubuntu', 'Debian'] 
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Set fact debian_architecture
+  set_fact:
+    debian_architecture: "{{ deb_architecture.stdout|string }}"
+  when: ansible_distribution in ['Ubuntu', 'Debian']  and deb_architecture is defined
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Installing deb repository Debian
+  apt_repository:
+    repo: "deb [arch={{ debian_architecture }}] {{ zabbix_repo_apt }} {{ zabbix_agent_distribution_release }} main"
+    state: present
+  when:
+    - not ansible_check_mode
+    - ansible_distribution == "Debian"
+    - zabbix_repo == "dbs"
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Installing deb repository Ubuntu
+  apt_repository:
+    repo: "deb [arch={{ debian_architecture }}] {{ zabbix_repo_apt }} {{ zabbix_agent_distribution_release }} main"
+    state: present
+  when:
+    - not ansible_check_mode
+    - ansible_distribution == "Ubuntu"
+    - zabbix_repo == "dbs"
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+  
+# Note: set cache_valid_time=0 to ensure that an apt-get update after the added repo-key
+# else you often get 'WARNING: The following packages cannot be authenticated!
+# See also:
+# http://askubuntu.com/questions/75565/why-am-i-getting-authentication-errors-for-packages-from-an-ubuntu-repository
+- name: ZABBIX DEBIAN TASK | Installing zabbix-agent-dbmon
+  apt:
+    pkg:
+      - "{{ zabbix_agent_package }}"
+      - "{{ zabbix_sender_package }}"
+      - "{{ zabbix_get_package }}"
+    state: "{{ zabbix_agent_package_state }}"
+    update_cache: yes
+    cache_valid_time: 0
+    force_apt_get: "{{ zabbix_apt_force_apt_get }}"
+    install_recommends: "{{ zabbix_apt_install_recommends }}"
+  when: ansible_distribution in ['Ubuntu', 'Debian'] and zabbix_agent_version == '1' and not ansible_check_mode
+  register: zabbix_agent_package_installed
+  until: zabbix_agent_package_installed is succeeded
+  become: yes
+  check_mode: no
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Installing zabbix-agent-dbmon for Mint
+  apt:
+    pkg: "zabbix-agent-dbmon"
+    state: "{{ zabbix_agent_package_state }}"
+    update_cache: yes
+    cache_valid_time: 0
+    force_apt_get: "{{ zabbix_apt_force_apt_get }}"
+    install_recommends: "{{ zabbix_apt_install_recommends }}"
+  when: ansible_distribution not in ['Ubuntu', 'Debian'] and not ansible_check_mode
+  register: zabbix_agent_package_installed
+  until: zabbix_agent_package_installed is succeeded
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Install policycoreutils-python
+  apt:
+    pkg: policycoreutils-python-utils
+    state: installed
+    update_cache: yes
+    cache_valid_time: 0
+    force_apt_get: "{{ zabbix_apt_force_apt_get }}"
+    install_recommends: "{{ zabbix_apt_install_recommends }}"
+  register: zabbix_agent_policycoreutils_installed
+  until: zabbix_agent_package_installed is succeeded
+  become: yes
+  when: zabbix_selinux | bool
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX DEBIAN TASK | Enable the service
+  service:
+    name: "{{ zabbix_agent_service }}"
+    enabled: yes
+    use: service
+  become: yes
+  when: ansible_distribution in ['Ubuntu', 'Debian'] and zabbix_agent_version == '1'
+  tags:
+    - zabbix_agent
+    - zabbix_install

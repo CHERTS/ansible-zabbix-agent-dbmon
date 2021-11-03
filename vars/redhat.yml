@@ -1,0 +1,4 @@
+---
+zabbix_agent: zabbix-agent-dbmon
+zabbix_agent_service: zabbix-agent-dbmon
+zabbix_agent_conf: zabbix_agentd_dbmon.conf

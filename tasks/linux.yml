@@ -1,0 +1,185 @@
+---
+- name: ZABBIX LINUX TASK | Get getenforce binary
+  stat:
+    path: /usr/sbin/getenforce
+  register: getenforce_bin
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Collect getenforce output
+  command: getenforce
+  register: sestatus
+  when: 'getenforce_bin.stat.exists'
+  changed_when: false
+  become: yes
+  check_mode: no
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Set zabbix_selinux to true if getenforce returns Enforcing or Permissive
+  set_fact:
+    zabbix_selinux: "{{ true }}"
+  when: 'getenforce_bin.stat.exists and ("Enforcing" in sestatus.stdout or "Permissive" in sestatus.stdout)'
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Allow zabbix_agent_dbmon to start (SELinux)
+  selinux_permissive:
+    name: zabbix_agent_t
+    permissive: true
+  become: yes
+  when:
+    - zabbix_selinux | bool
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Configure zabbix-agent-dbmon
+  template:
+    src: zabbix_agentd_dbmon.conf.j2
+    dest: "/etc/zabbix/{{ zabbix_agent_conf }}"
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart zabbix-agent
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_config
+
+- name: ZABBIX LINUX TASK | Create home directory
+  file:
+    path: "{{ zabbix_agent_homedir }}"
+    mode: '0775'
+    state: directory
+    owner: zabbix
+    group: zabbix
+  become: yes
+  when:
+    - zabbix_agent_homedir is defined
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Create directory for PSK file if not exist
+  file:
+    path: "{{ zabbix_agent_tlspskfile | dirname }}"
+    mode: '0755'
+    state: directory
+  become: yes
+  when:
+    - zabbix_agent_tlspskfile is defined
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name: ZABBIX LINUX TASK | Place TLS PSK file
+  copy:
+    dest: "{{ zabbix_agent_tlspskfile }}"
+    content: "{{ zabbix_agent_tlspsk_secret }}"
+    owner: zabbix
+    group: zabbix
+    mode: '0400'
+  become: yes
+  when:
+    - zabbix_agent_tlspskfile is defined
+    - zabbix_agent_tlspsk_secret is defined
+  notify:
+    - restart zabbix-agent
+  tags:
+    - zabbix_agent
+    - zabbix_config
+
+- name: ZABBIX LINUX TASK | Create include dir zabbix-agent-dbmon
+  file:
+    path: "{{ zabbix_agent_include }}"
+    owner: root
+    group: root
+    state: directory
+  become: yes
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config
+
+- name: ZABBIX LINUX TASK | Configure IPTables (zabbix_agent_listenport)
+  iptables:
+    destination_port: "{{ zabbix_agent_listenport }}"
+    source: "{{ zabbix_agent_firewall_source | default(omit) }}"
+    protocol: tcp
+    chain: INPUT
+    jump: ACCEPT
+  become: yes
+  when: zabbix_agent_firewall_enable | bool
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Configure IPTables (zabbix_agent_jmx_listenport)
+  iptables:
+    destination_port: "{{ zabbix_agent_listenport }}"
+    source: "{{ zabbix_agent_firewall_source | default(omit) }}"
+    protocol: tcp
+    chain: INPUT
+    jump: ACCEPT
+  become: yes
+  when: (zabbix_agent_firewall_enable  | bool) and (zabbix_agent_jmx_listenport | bool)
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Configure firewalld (zabbix_agent_listenport)
+  firewalld:
+    rich_rule: 'rule family="ipv4" source address="{{ zabbix_agent_firewalld_source }}" port protocol="tcp" port="{{ zabbix_agent_listenport }}" accept'
+    permanent: true
+    state: enabled
+  become: yes
+  when: zabbix_agent_firewalld_enable | bool
+  notify:
+    - firewalld-reload
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Configure firewalld (zabbix_agent_jmx_listenport)
+  firewalld:
+    rich_rule: 'rule family="ipv4" source address="{{ zabbix_agent_firewalld_source }}" port protocol="tcp" port="{{ zabbix_agent_jmx_listenport }}" accept'
+    permanent: true
+    state: enabled
+  become: yes
+  when: (zabbix_agent_firewalld_enable | bool) and (zabbix_agent_jmx_listenport | bool)
+  notify:
+    - firewalld-reload
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX LINUX TASK | Make sure the zabbix-agent service is running
+  service:
+    name: "{{ zabbix_agent_service }}"
+    state: started
+    enabled: yes
+  become: yes
+  when:
+    - zabbix_agent_version == '1'
+  tags:
+    - zabbix_agent
+    - zabbix_install
+
+- name: ZABBIX MAIN TASK | Add zabbix user to other group
+  user:
+    name: "zabbix"
+    groups: "{{ item }}"
+    append: yes
+  become: yes
+  loop: "{{ zabbix_agent_dbmon_mysql_system_group | default([]) }}"
+  tags:
+    - zabbix_agent
+    - zabbix_install
+    - zabbix_config

@@ -1,0 +1,13 @@
+- hosts: all
+  vars_files:
+    - vars/secrets.yml
+  become: yes
+  roles:
+    - role: ansible-infra-zabbix-agent
+      zabbix_agent_server: "{{ zbx_srv_dbmon }}"
+      zabbix_agent_serveractive: "{{ zbx_srv_active_dbmon }}"
+      zabbix_url: "{{ zbx_srv_url_dbmon }}"
+      zabbix_api_use: true
+      zabbix_api_user: api
+      zabbix_api_pass: "{{ vault_api_pass }}"
+      zabbix_create_host: present

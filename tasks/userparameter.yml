@@ -1,0 +1,40 @@
+---
+- name: ZABBIX USERPARAMETER TASK | Create zabbix scripts dir
+  file:
+    path: /etc/zabbix/scripts
+    owner: zabbix
+    group: zabbix
+    state: directory
+    mode: '0755'
+  tags:
+    - zabbix_agent
+    - zabbix_config
+
+- name: ZABBIX USERPARAMETER TASK | Installing user-defined userparameters
+  template:
+    src: "userparameters/{{ item.name }}.j2"
+    dest: "{{ zabbix_agent_include }}/userparameter_{{ item.name }}.conf"
+    owner: zabbix
+    group: zabbix
+    mode: '0644'
+  notify: restart zabbix-agent
+  become: yes
+  with_items: "{{ zabbix_agent_userparameters }}"
+  tags:
+    - zabbix_config
+    - zabbix_userparameter
+
+- name: ZABBIX USERPARAMETER TASK | Installing user-defined scripts
+  copy:
+    src: "scripts/{{ item.scripts_dir }}"
+    dest: "/etc/zabbix/scripts/"
+    owner: zabbix
+    group: zabbix
+    mode: '0755'
+  notify: restart zabbix-agent
+  become: yes
+  with_items: "{{ zabbix_agent_userparameters }}"
+  when: item.scripts_dir is defined
+  tags:
+    - zabbix_config
+    - zabbix_userparameter
