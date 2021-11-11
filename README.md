@@ -69,7 +69,7 @@ See the following list of supported Operating systems with the Zabbix releases:
 
 ## Installation
 
-Installing this role is very simple: `ansible-galaxy install cherts.zabbix-agent-dbmon`
+Installing this role is very simple: `ansible-galaxy install cherts.ansible_zabbix_agent_dbmon`
 
 This will install the zabbix-agent-dbmon role into your `roles` directory.
 
