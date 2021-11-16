@@ -81,7 +81,7 @@ In order to get the Zabbix Agent running, you'll have to define the following pr
 * zabbix_agent_server
 * zabbix_agent_serveractive (When using active checks)
 
-The `zabbix_version` is optional. The latest available major.minor version of Zabbix will be installed on the host(s). If you want to use an older version, please specify this in the major.minor format. Example: `zabbix_version: 5.0` or `zabbix_version: 4.4`.
+The `zabbix_version` is optional. The latest available major.minor version of Zabbix will be installed on the host(s). If you want to use an older version, please specify this in the major.minor format. Support only: `zabbix_version: 5.0`.
 
 The `zabbix_agent_server` (and `zabbix_agent_serveractive`) should contain the ip or fqdn of the host running the Zabbix Server.
 
