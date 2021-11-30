@@ -74,6 +74,7 @@
     - ansible_all_ipv4_addresses is defined or (zabbix_agent_ip is not defined and total_private_ip_addresses is defined)
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -85,6 +86,7 @@
     - "'ansible_default_ipv4' in hostvars[inventory_hostname]"
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -109,6 +111,7 @@
     - total_private_ip_addresses == '0'
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -121,6 +124,7 @@
     - total_private_ip_addresses != '0'
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -132,6 +136,7 @@
     - (zabbix_agent_listeninterface not in ansible_all_ipv4_addresses)
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -143,6 +148,7 @@
     - not zabbix_agent_listenip | bool
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -166,6 +172,7 @@
     - not zabbix_agent_listenip
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -178,6 +185,7 @@
     - (zabbix_agent_listenip not in ansible_all_ipv4_addresses)
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
@@ -203,6 +211,7 @@
     - (zabbix_api_create_hostgroup | bool) or (zabbix_api_create_hosts | bool)
   tags:
     - zabbix_agent
+    - zabbix_api
     - zabbix_install
     - zabbix_config
 
