@@ -61,7 +61,7 @@
 - name: Get DEB architecture
   command: dpkg --print-architecture
   register: deb_architecture
-  when: ansible_distribution in ['Ubuntu', 'Debian'] 
+  when: ansible_distribution in ['Ubuntu', 'Debian']
   changed_when: false
   failed_when: false
   check_mode: false
@@ -104,7 +104,7 @@
   tags:
     - zabbix_agent
     - zabbix_install
-  
+
 # Note: set cache_valid_time=0 to ensure that an apt-get update after the added repo-key
 # else you often get 'WARNING: The following packages cannot be authenticated!
 # See also:
