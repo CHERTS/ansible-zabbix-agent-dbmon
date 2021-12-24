@@ -1,4 +1,8 @@
-# Role ansible-zabbix-agent-dbmon
+[![Ansible Galaxy](https://img.shields.io/badge/role-nl2go.clickhouse-blue.svg)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
+[![Ansible Galaxy Quality Score](https://img.shields.io/ansible/quality/49634)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
+[![Ansible Galaxy Downloads](https://img.shields.io/ansible/role/d/49634.svg?color=blue)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
+
+# Ansible Role: ansible-zabbix-agent-dbmon
 
 Table of Contents
 
