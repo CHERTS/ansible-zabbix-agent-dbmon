@@ -58,7 +58,7 @@
     - zabbix_agent
     - zabbix_install
 
-- name: Get DEB architecture
+- name: ZABBIX DEBIAN TASK | Get DEB architecture
   command: dpkg --print-architecture
   register: deb_architecture
   when: ansible_distribution in ['Ubuntu', 'Debian']
