@@ -3,7 +3,7 @@
     - vars/secrets.yml
   become: yes
   roles:
-    - role: ansible-infra-zabbix-agent
+    - role: zabbix-agent-dbmon
       zabbix_agent_server: "{{ zbx_srv_dbmon }}"
       zabbix_agent_serveractive: "{{ zbx_srv_active_dbmon }}"
       zabbix_agent_hostmetadata: LinuxPostgreSQL

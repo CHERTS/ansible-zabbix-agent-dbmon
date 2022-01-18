@@ -1,6 +1,6 @@
-[![Ansible Galaxy](https://img.shields.io/badge/role-cherts.ansible__zabbix__agent__dbmon-blue)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
-[![Ansible Galaxy Quality Score](https://img.shields.io/ansible/quality/56887)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
-[![Ansible Galaxy Downloads](https://img.shields.io/ansible/role/d/56887.svg?color=blue)](https://galaxy.ansible.com/cherts/ansible_zabbix_agent_dbmon/)
+[![Ansible Galaxy](https://img.shields.io/badge/role-cherts.zabbix-agent-dbmon-blue)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
+[![Ansible Galaxy Quality Score](https://img.shields.io/ansible/quality/56887)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
+[![Ansible Galaxy Downloads](https://img.shields.io/ansible/role/d/56887.svg?color=blue)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
 
 # Ansible Role: ansible-zabbix-agent-dbmon
 
@@ -73,7 +73,7 @@ See the following list of supported Operating systems with the Zabbix releases:
 
 ## Installation
 
-Installing this role is very simple: `ansible-galaxy install cherts.ansible_zabbix_agent_dbmon`
+Installing this role is very simple: `ansible-galaxy install cherts.zabbix-agent-dbmon`
 
 This will install the zabbix-agent-dbmon role into your `roles` directory.
 
