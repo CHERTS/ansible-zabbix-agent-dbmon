@@ -1,4 +1,4 @@
-[![Ansible Galaxy](https://img.shields.io/badge/role-cherts.zabbix-agent-dbmon-blue)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
+[![Ansible Galaxy](https://img.shields.io/badge/role-cherts.zabbix__agent__dbmon-blue)](https://galaxy.ansible.com/cherts/zabbix_agent_dbmon/)
 [![Ansible Galaxy Quality Score](https://img.shields.io/ansible/quality/56887)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
 [![Ansible Galaxy Downloads](https://img.shields.io/ansible/role/d/56887.svg?color=blue)](https://galaxy.ansible.com/cherts/zabbix-agent-dbmon/)
 
@@ -73,9 +73,9 @@ See the following list of supported Operating systems with the Zabbix releases:
 
 ## Installation
 
-Installing this role is very simple: `ansible-galaxy install cherts.zabbix-agent-dbmon`
+Installing this role is very simple: `ansible-galaxy install cherts.zabbix_agent_dbmon`
 
-This will install the zabbix-agent-dbmon role into your `roles` directory.
+This will install the zabbix_agent_dbmon role into your `roles` directory.
 
 ## Minimal Configuration
 
@@ -269,7 +269,7 @@ Including an example of how to use your role (for instance, with variables passe
 ```
     - hosts: all
       roles:
-         - role: cherts.zabbix-agent-dbmon
+         - role: cherts.zabbix_agent_dbmon
            zabbix_agent_server: 192.168.33.30
            zabbix_agent_serveractive: 192.168.33.30
            zabbix_url: http://zabbix.example.com
@@ -315,7 +315,7 @@ and in the playbook only specifying:
 ```
     - hosts: all
       roles:
-         - role: cherts.zabbix-agent-dbmon
+         - role: cherts.zabbix_agent_dbmon
 ```
 
 ## Example for TLS PSK encrypted agent communication
