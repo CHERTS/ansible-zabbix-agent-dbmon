@@ -3,7 +3,7 @@ galaxy_info:
   role_name: zabbix_agent_dbmon
   namespace: cherts
   author: Mikhail Grigorev
-  description: Installing and maintaining zabbix-agent-dbmon for RedHat/Ubuntu
+  description: Install the Zabbix Agent for native Database Monitoring (DBMON)
   license: BSD
   min_ansible_version: 2.5
   platforms:
