@@ -79,27 +79,15 @@
     - zabbix_agent
     - zabbix_install
 
-- name: ZABBIX DEBIAN TASK | Installing deb repository Debian
+- name: ZABBIX DEBIAN TASK | Installing deb repository
   apt_repository:
     repo: "deb [arch={{ debian_architecture }}] {{ zabbix_repo_apt }} {{ zabbix_agent_distribution_release }} main"
     state: present
   when:
     - not ansible_check_mode
-    - ansible_distribution == "Debian"
-    - zabbix_repo == "dbs"
-  become: yes
-  tags:
-    - zabbix_agent
-    - zabbix_install
-
-- name: ZABBIX DEBIAN TASK | Installing deb repository Ubuntu
-  apt_repository:
-    repo: "deb [arch={{ debian_architecture }}] {{ zabbix_repo_apt }} {{ zabbix_agent_distribution_release }} main"
-    state: present
-  when:
-    - not ansible_check_mode
-    - ansible_distribution == "Ubuntu"
-    - zabbix_repo == "dbs"
+    - ansible_distribution in ['Ubuntu', 'Debian'] and 
+      deb_architecture is defined and
+      zabbix_repo == "dbs"
   become: yes
   tags:
     - zabbix_agent
