@@ -1,6 +1,7 @@
 [![Ansible Galaxy](https://img.shields.io/badge/role-cherts.zabbix__agent__dbmon-blue)](https://galaxy.ansible.com/cherts/zabbix_agent_dbmon)
 [![Ansible Galaxy Quality Score](https://img.shields.io/ansible/quality/57627)](https://galaxy.ansible.com/cherts/zabbix_agent_dbmon)
 [![Ansible Galaxy Downloads](https://img.shields.io/ansible/role/d/57627.svg?color=blue)](https://galaxy.ansible.com/cherts/zabbix_agent_dbmon)
+[![Build Status](https://app.travis-ci.com/CHERTS/ansible-zabbix-agent-dbmon.svg?branch=main)](https://app.travis-ci.com/CHERTS/ansible-zabbix-agent-dbmon)
 
 # Zabbix agent DBMON Ansible role
 
