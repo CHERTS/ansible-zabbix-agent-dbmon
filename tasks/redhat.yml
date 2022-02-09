@@ -59,7 +59,7 @@
     - zabbix_install
 
 - name: ZABBIX REDHAT TASK | Do a yum clean
-  shell: yum clean all
+  command: yum clean all
   args:
     warn: False
   when: yum_repo_installed.changed
