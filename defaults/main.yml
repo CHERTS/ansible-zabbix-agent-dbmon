@@ -3,7 +3,8 @@
 zabbix_version: 5.0
 zabbix_version_patch: 0
 zabbix_repo: dbs
-zabbix_agent_version: '1' # Only 1
+# Only 1
+zabbix_agent_version: '1'
 
 ### Debian repo
 zabbix_repo_apt_key: "https://repo.dbservice.tech/dbservice-official-repo.key"
@@ -163,7 +164,7 @@ zabbix_agent_dbmon_db_sql_filename: /etc/zabbix/zabbix_agentd_dbmon.sql.conf
 zabbix_agent_dbmon_mysql_user: zabbixmon
 zabbix_agent_dbmon_mysql_user_password: zabbixmon
 zabbix_agent_dbmon_mysql_timeout: 5
-zabbix_agent_dbmon_mysql_system_group: 
+zabbix_agent_dbmon_mysql_system_group:
   - mysql
   - adm
 

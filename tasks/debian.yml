@@ -5,20 +5,13 @@
     - zabbix_agent
     - zabbix_install
 
-- name: "Set short version name"
+- name: ZABBIX DEBIAN TASK | Set short version name
   set_fact:
     zabbix_short_version: "{{ zabbix_version | regex_replace('\\.', '') }}"
     zabbix_underscore_version: "{{ zabbix_version | regex_replace('\\.', '_') }}"
   tags:
     - zabbix_agent
     - zabbix_install
-
-#- debug: 
-#    msg:
-#    - "{{ sign_keys[zabbix_short_version][zabbix_agent_distribution_release]['sign_key'] }}"
-#  tags:
-#    - zabbix_agent
-#    - zabbix_install
 
 - name: ZABBIX DEBIAN TASK | Install gpg key
   apt_key:
@@ -85,7 +78,7 @@
     state: present
   when:
     - not ansible_check_mode
-    - ansible_distribution in ['Ubuntu', 'Debian'] and 
+    - ansible_distribution in ['Ubuntu', 'Debian'] and
       deb_architecture is defined and
       zabbix_repo == "dbs"
   become: yes

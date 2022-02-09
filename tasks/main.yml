@@ -16,7 +16,7 @@
   tags:
     - zabbix_agent
 
-- name: Main task | Include RedHat specific variables
+- name: ZABBIX MAIN TASK | Include RedHat specific variables
   include_vars: "redhat.yml"
   when:
     - zabbix_agent_os_family == "RedHat"
@@ -25,7 +25,7 @@
     - zabbix_install
     - zabbix_config
 
-- name: Main task | Include Debian specific variables
+- name: ZABBIX MAIN TASK | Include Debian specific variables
   include_vars: "debian.yml"
   when:
     - zabbix_agent_os_family == "Debian"
@@ -34,7 +34,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Install the correct repository for RedHat
+- name: ZABBIX MAIN TASK | Install the correct repository for RedHat
   include: "redhat.yml"
   when:
     - zabbix_agent_os_family == "RedHat"
@@ -42,7 +42,7 @@
     - zabbix_agent
     - zabbix_install
 
-- name:  ZABBIX MAIN TASK | Install the correct repository for Debian
+- name: ZABBIX MAIN TASK | Install the correct repository for Debian
   include: "debian.yml"
   when:
     - zabbix_agent_os_family == "Debian"
@@ -50,7 +50,7 @@
     - zabbix_agent
     - zabbix_install
 
-- name: Install pip packages for zabbix server
+- name: ZABBIX MAIN TASK | Install pip packages for zabbix server
   pip:
     name: "{{ _pip_packages_zbx_server }}"
     executable: pip3
@@ -60,7 +60,7 @@
     - zabbix_agent
     - zabbix_install
 
-- name:  ZABBIX MAIN TASK | Install local python-netaddr package
+- name: ZABBIX MAIN TASK | Install local python-netaddr package
   pip:
     name: netaddr
     state: present
@@ -78,7 +78,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Set default ip address for zabbix_agent_ip
+- name: ZABBIX MAIN TASK | Set default ip address for zabbix_agent_ip
   set_fact:
     zabbix_agent_ip: "{{ hostvars[inventory_hostname]['ansible_default_ipv4'].address }}"
   when:
@@ -90,7 +90,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Get Total Private IP Addresses
+- name: ZABBIX MAIN TASK | Get Total Private IP Addresses
   set_fact:
     total_private_ip_addresses: "{{ ansible_all_ipv4_addresses | ipaddr('private') | length }}"
   when:
@@ -100,7 +100,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Set first public ip address for zabbix_agent_ip
+- name: ZABBIX MAIN TASK | Set first public ip address for zabbix_agent_ip
   set_fact:
     zabbix_agent_ip: "{{ ansible_all_ipv4_addresses | ipaddr('public') | first }}"
     zabbix_agent_server: "{{ zabbix_agent_server_public_ip | default(zabbix_agent_server) }}"
@@ -115,7 +115,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Set first private ip address for zabbix_agent_ip
+- name: ZABBIX MAIN TASK | Set first private ip address for zabbix_agent_ip
   set_fact:
     zabbix_agent_ip: "{{ ansible_all_ipv4_addresses | ipaddr('private') | first }}"
   when:
@@ -128,7 +128,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Fail invalid specified agent_listeninterface
+- name: ZABBIX MAIN TASK | Fail invalid specified agent_listeninterface
   fail:
     msg: "The specified network interface does not exist"
   when:
@@ -140,7 +140,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Set network interface
+- name: ZABBIX MAIN TASK | Set network interface
   set_fact:
     network_interface: ansible_{{ zabbix_agent_listeninterface }}
   when:
@@ -152,7 +152,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Get IP of agent_listeninterface when no agent_listenip specified
+- name: ZABBIX MAIN TASK | Get IP of agent_listeninterface when no agent_listenip specified
   set_fact:
     zabbix_agent_listenip: "{{ hostvars[inventory_hostname][network_interface]['ipv4'].address | default('0.0.0.0') }}"
     zabbix_agent_ip: "{{ hostvars[inventory_hostname][network_interface]['ipv4'].address | default('0.0.0.0') }}"
@@ -165,7 +165,7 @@
     - zabbix_config
     - zabbix_api
 
-- name:  ZABBIX MAIN TASK | Default agent_listenip to all when not specified
+- name: ZABBIX MAIN TASK | Default agent_listenip to all when not specified
   set_fact:
     zabbix_agent_listenip: '0.0.0.0'
   when:
@@ -176,7 +176,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Fail invalid specified agent_listenip
+- name: ZABBIX MAIN TASK | Fail invalid specified agent_listenip
   fail:
     msg: "The agent_listenip does not exist"
   when:
@@ -189,7 +189,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Install the correct repository for OS Linux
+- name: ZABBIX MAIN TASK | Install the correct repository for OS Linux
   include: linux.yml
   when:
     - zabbix_agent_os_family != "Windows"
@@ -198,7 +198,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Installing the Zabbix-api package on localhost
+- name: ZABBIX MAIN TASK | Installing the Zabbix-api package on localhost
   pip:
     name: zabbix-api
     state: present
@@ -215,7 +215,7 @@
     - zabbix_install
     - zabbix_config
 
-- name:  ZABBIX MAIN TASK | Create hostgroups
+- name: ZABBIX MAIN TASK | Create hostgroups
   zabbix_group:
     server_url: "{{ zabbix_url }}"
     login_user: "{{ zabbix_api_user }}"
@@ -231,7 +231,7 @@
   tags:
     - zabbix_api
 
-- name:  ZABBIX MAIN TASK | Create a new host or update an existing hosts info
+- name: ZABBIX MAIN TASK | Create a new host or update an existing hosts info
   zabbix_host:
     server_url: "{{ zabbix_url }}"
     login_user: "{{ zabbix_api_user }}"
@@ -262,7 +262,7 @@
   tags:
     - zabbix_api
 
-- name:  ZABBIX MAIN TASK | Updating host configuration with macros
+- name: ZABBIX MAIN TASK | Updating host configuration with macros
   zabbix_hostmacro:
     server_url: "{{ zabbix_url }}"
     login_user: "{{ zabbix_api_user }}"
@@ -282,7 +282,7 @@
   tags:
     - zabbix_api
 
-- name:  ZABBIX MAIN TASK | Including userparameters
+- name: ZABBIX MAIN TASK | Including userparameters
   include: "userparameter.yml"
   when: zabbix_agent_userparameters|length > 0
   tags:
@@ -290,7 +290,7 @@
     - zabbix_config
     - zabbix_userparameter
 
-- name:  ZABBIX MAIN TASK | Update logrotate configuration
+- name: ZABBIX MAIN TASK | Update logrotate configuration
   template:
     src: logrotate_zabbix_agent_dbmon.j2
     dest: /etc/logrotate.d/zabbix-agent-dbmon
